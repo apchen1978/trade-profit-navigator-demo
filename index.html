@@ -14,18 +14,68 @@
       <section class="intro"><div><span class="eyebrow">VALUE CAPTURE DECISION TOOL</span><h2>Where can this trade business capture more value?</h2><p>Compare the next commercial lever by economics, cash exposure, risk and evidence, before committing more resources.</p></div><div class="boundary"><strong>Not a margin score.</strong><span>Mathematical opportunity is separated from commercial feasibility. UNKNOWN stays UNKNOWN.</span></div></section>
       <nav class="flow" aria-label="Decision flow"><span>01 Trade case</span><i>→</i><span>02 Value chain</span><i>→</i><span>03 Profit levers</span><i>→</i><span>04 Owner decision</span></nav>
       <section class="workspace">
-        <article class="panel case-panel"><div class="panel-kicker">01 · TRADE CASE</div><h3>Running shoe</h3><span class="tag">SYNTHETIC USD BASELINE / NOT VERIFIED</span><dl class="facts"><div><dt>Market</dt><dd>Southeast Asia → international retail</dd></div><div><dt>Quantity</dt><dd><input id="quantity" type="number" value="1000" min="1" /> <span>pairs</span></dd></div><div><dt>Purchase price</dt><dd><input id="purchase" type="number" value="18" min="0" /> USD / pair</dd></div><div><dt>Channel price</dt><dd><input id="selling" type="number" value="110" min="0" /> USD / pair</dd></div><div><dt>MOQ</dt><dd><input id="moq" type="number" value="1000" min="1" /> pairs</dd></div><div><dt>Payment</dt><dd>30% deposit / balance before shipment</dd></div></dl><div class="unknown-box"><strong>UNKNOWN</strong><span>Freight, duties, warehousing, returns and achievable channel price.</span></div></article>
-        <article class="panel chain-panel"><div class="panel-kicker">02 · VALUE CHAIN</div><h3>Known economics, visible gaps</h3><div class="chain"><div class="chain-node known"><b>18</b><span>Manufacturing</span><small>SYNTHETIC USD</small></div><div class="chain-line"></div><div class="chain-node unknown"><b>?</b><span>Export / freight</span><small>UNKNOWN</small></div><div class="chain-line"></div><div class="chain-node unknown"><b>?</b><span>Import / warehouse</span><small>UNKNOWN</small></div><div class="chain-line"></div><div class="chain-node known"><b>110</b><span>Channel price</span><small>SYNTHETIC USD</small></div></div><div class="economics"><span>KNOWN UNIT CONTRIBUTION</span><strong id="unit-contribution">USD 92</strong><small>Known price less known manufacturing cost. Not landed profit.</small></div><div class="economics"><span>KNOWN TOTAL CONTRIBUTION</span><strong id="total-contribution">USD 92,000</strong><small>Trade costs and commercial feasibility remain outside this figure.</small></div></article>
+        <article class="panel case-panel"><div class="panel-kicker">01 · TRADE CASE</div><h3 id="case-title">Running shoe</h3><span id="case-label" class="tag">SYNTHETIC USD BASELINE / NOT VERIFIED</span><dl class="facts"><div><dt>Market</dt><dd id="case-market">Southeast Asia → international retail</dd></div><div><dt>Quantity</dt><dd><input id="quantity" type="number" value="1000" min="1" /> <span id="unit-label">pairs</span></dd></div><div><dt id="purchase-label">Purchase price</dt><dd><input id="purchase" type="number" value="18" min="0" /> <span id="purchase-unit">USD / pair</span></dd></div><div><dt id="selling-label">Channel price</dt><dd><input id="selling" type="number" value="110" min="0" /> <span id="selling-unit">USD / pair</span></dd></div><div id="extra-cost-row" hidden><dt id="extra-cost-label">Known trade + project cost</dt><dd id="extra-cost-value"></dd></div><div><dt>MOQ</dt><dd><input id="moq" type="number" value="1000" min="1" /> <span id="moq-unit">pairs</span></dd></div><div><dt>Payment</dt><dd><span id="payment-terms">30% deposit / balance before shipment</span><small id="payment-note" class="field-note">Context only · not included in v0.1 calculations</small></dd></div></dl><p id="connected-note" class="connected-note" hidden></p><div class="unknown-box"><strong>UNKNOWN</strong><span id="unknown-list">Freight, duties, warehousing, returns and achievable channel price.</span></div></article>
+        <article class="panel chain-panel"><div class="panel-kicker">02 · VALUE CHAIN</div><h3>Known economics, visible gaps</h3><div class="chain"><div id="chain-goods" class="chain-node known"><b>18</b><span>Manufacturing</span><small>SYNTHETIC USD</small></div><div class="chain-line"></div><div id="chain-middle" class="chain-node unknown"><b>?</b><span>Export / freight</span><small>UNKNOWN</small></div><div class="chain-line"></div><div id="chain-third" class="chain-node unknown"><b>?</b><span>Import / warehouse</span><small>UNKNOWN</small></div><div class="chain-line"></div><div id="chain-price" class="chain-node known"><b>110</b><span>Channel price</span><small>SYNTHETIC USD</small></div></div><div class="economics"><span>KNOWN UNIT CONTRIBUTION</span><strong id="unit-contribution">USD 92</strong><small id="unit-contribution-note">Known price less known manufacturing cost. Not landed profit.</small></div><div class="economics"><span>KNOWN TOTAL CONTRIBUTION</span><strong id="total-contribution">USD 92,000</strong><small id="total-contribution-note">Trade costs and commercial feasibility remain outside this figure.</small></div></article>
         <article class="panel navigator-panel"><div class="panel-kicker">03 · PROFIT NAVIGATOR</div><h3>Top profit levers</h3><p class="muted">The smallest credible move comes first. No lever is a recommendation until its evidence is tested.</p><div id="lever-list"></div></article>
       </section>
       <section class="owner-strip"><div><div class="panel-kicker">04 · OWNER DECISION</div><h3>What are we willing to test?</h3><p>Choose one controlled experiment, record the trade-off, then rerun the economics when new evidence arrives.</p></div><div class="owner-fields"><label>Selected lever<select><option>Supplier cost negotiation</option><option>Higher MOQ pilot</option><option>ODM / supply solution discovery</option></select></label><label>Owner decision<select><option>Not recorded</option><option>Test in shadow mode</option><option>Defer</option></select></label></div></section>
       <footer>Trade Profit Navigator v0.1 · synthetic educational case · no real customer data · no closing probability · human judgment remains the authority.</footer>
     </main>
     <script type="module">
-      import { CASE_001, calculateCase, calculateLevers, formatMoney } from './navigator.js?v=0.1.1';
+      import { calculateCase, calculateLevers, formatMoney, getCaseFromSearch } from './navigator.js?v=0.2.0';
       const $ = (id) => document.getElementById(id);
+      const activeCase = getCaseFromSearch(window.location.search);
+
+      function setChainNode(id, { value, label, note, tone = 'known' }) {
+        const node = $(id);
+        node.className = `chain-node ${tone}`;
+        node.querySelector('b').textContent = value;
+        node.querySelector('span').textContent = label;
+        node.querySelector('small').textContent = note;
+      }
+
+      function setCaseContext(caseData) {
+        const unit = caseData.unit;
+        const currency = caseData.currency;
+        $('case-title').textContent = caseData.product;
+        $('case-label').textContent = caseData.label;
+        $('case-market').textContent = caseData.market;
+        $('quantity').value = caseData.quantity;
+        $('purchase').value = caseData.purchasePrice;
+        $('selling').value = caseData.sellingPrice;
+        $('moq').value = caseData.moq;
+        ['unit-label', 'moq-unit'].forEach((id) => $(id).textContent = unit);
+        ['purchase-unit', 'selling-unit'].forEach((id) => $(id).textContent = `${currency} / ${unit}`);
+        $('payment-terms').textContent = caseData.paymentTerms;
+        $('payment-note').textContent = caseData.paymentNote ?? 'Context only · not included in v0.1 calculations';
+        $('unknown-list').textContent = caseData.unknowns.join('; ');
+        const extraCost = caseData.knownCosts?.tradeAndProject;
+        $('extra-cost-row').hidden = !Number.isFinite(extraCost);
+        if (Number.isFinite(extraCost)) {
+          $('extra-cost-label').textContent = caseData.extraCostLabel;
+          $('extra-cost-value').textContent = `${currency} ${extraCost} / ${unit}`;
+        }
+        const connected = Boolean(caseData.connectionNote);
+        $('connected-note').hidden = !connected;
+        $('connected-note').textContent = caseData.connectionNote ?? '';
+        $('purchase-label').textContent = connected ? 'Goods cost' : 'Purchase price';
+        $('selling-label').textContent = connected ? 'Planning price' : 'Channel price';
+        setChainNode('chain-goods', { value: caseData.purchasePrice, label: connected ? 'Goods cost' : 'Manufacturing', note: `${currency} / ${unit}` });
+        setChainNode('chain-middle', Number.isFinite(extraCost)
+          ? { value: extraCost, label: 'Trade + project', note: `${currency} / ${unit}` }
+          : { value: '?', label: 'Export / freight', note: 'UNKNOWN', tone: 'unknown' });
+        setChainNode('chain-third', connected
+          ? { value: '?', label: 'Binding payment', note: 'UNRESOLVED', tone: 'unknown' }
+          : { value: '?', label: 'Import / warehouse', note: 'UNKNOWN', tone: 'unknown' });
+        setChainNode('chain-price', { value: caseData.sellingPrice, label: connected ? 'Planning price' : 'Channel price', note: `${currency} / ${unit}` });
+        $('unit-contribution-note').textContent = connected
+          ? 'Planning price less known goods, trade, and project cost per metre. It does not resolve payment terms.'
+          : 'Known price less known manufacturing cost. Not landed profit.';
+        $('total-contribution-note').textContent = caseData.totalContributionNote ?? 'Trade costs and commercial feasibility remain outside this figure.';
+      }
+
       function render() {
-        const input = { ...CASE_001, quantity: Number($('quantity').value), purchasePrice: Number($('purchase').value), sellingPrice: Number($('selling').value), moq: Number($('moq').value), knownCosts: { manufacturing: Number($('purchase').value) } };
+        const input = { ...activeCase, quantity: Number($('quantity').value), purchasePrice: Number($('purchase').value), sellingPrice: Number($('selling').value), moq: Number($('moq').value), knownCosts: { ...activeCase.knownCosts, manufacturing: Number($('purchase').value) } };
         const result = calculateCase(input);
         const casePanel = document.querySelector('.case-panel');
         let moqWarning = $('moq-warning');
@@ -36,19 +86,13 @@
           moqWarning.innerHTML = '<strong>MOQ CHECK</strong><span>This quantity is below the supplier MOQ. The contribution shown remains a mathematical scenario, not an executable order economics result.</span>';
           casePanel.append(moqWarning);
         }
-        const paymentCell = document.querySelector('.facts div:last-child dd');
-        if (paymentCell && !paymentCell.querySelector('.field-note')) {
-          const note = document.createElement('small');
-          note.className = 'field-note';
-          note.textContent = 'Context only · not included in v0.1 calculations';
-          paymentCell.append(note);
-        }
-        $('unit-contribution').textContent = formatMoney(result.knownUnitContribution, 'USD');
-        $('total-contribution').textContent = formatMoney(result.knownTotalContribution, 'USD');
+        $('unit-contribution').textContent = formatMoney(result.knownUnitContribution, activeCase.currency);
+        $('total-contribution').textContent = formatMoney(result.knownTotalContribution, activeCase.currency);
         moqWarning.hidden = !result.quantityBelowMOQ;
         $('lever-list').innerHTML = calculateLevers(input).map((lever) => `<section class="lever"><div class="lever-head"><span class="lever-no">0${lever.sort}</span><strong>${lever.title}</strong></div><div class="lever-grid"><div><small>ECONOMIC EFFECT</small><span>${lever.direction}</span></div><div><small>CASH EFFECT</small><span>${lever.cash}</span></div><div><small>RISK</small><span>${lever.risk}</span></div><div><small>EVIDENCE</small><span class="evidence-${lever.evidenceState.toLowerCase()}">${lever.evidence}</span></div></div><details><summary>Next experiment · Owner boundary</summary><p><b>Test next:</b> ${lever.next}</p><p><b>Owner decides:</b> ${lever.owner}</p><p><b>Still UNKNOWN:</b> ${lever.unknown}</p></details></section>`).join('');
       }
       ['quantity', 'purchase', 'selling', 'moq'].forEach((id) => $(id).addEventListener('input', render));
+      setCaseContext(activeCase);
       render();
     </script>
   </body>
