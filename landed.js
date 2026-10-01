@@ -85,7 +85,12 @@ export function calculateLanded(cfg, ov = {}) {
     { id: "contingency", label: "Contingency reserve", perUnit: cfg.contingency, source: "CASE" },
     { id: "duty", label: "Import duty borne by seller", perUnit: duty, source: "ASSUMPTION" },
     { id: "financing", label: "Cost of funding the payment timeline", perUnit: fin.perUnit, source: "ASSUMPTION" },
-  ].map((row) => ({ ...row, total: row.perUnit * q }));
+  ];
+  // Letter-of-credit bank fees are the owner's input. Blank stays UNKNOWN and is never counted as zero cost.
+  const lc = cfg.terms[termsKey].lc === true;
+  const lcFeeUnknown = lc && !finite(cfg.lcFeePct);
+  if (lc && !lcFeeUnknown) stack.push({ id: "lcFee", label: "Letter-of-credit bank fees", perUnit: price * cfg.lcFeePct, source: "OWNER INPUT" });
+  for (const row of stack) row.total = row.perUnit * q;
   const costPerUnit = stack.reduce((sum, row) => sum + row.perUnit, 0);
   const netPerUnit = price - costPerUnit;
   const net = netPerUnit * q;
@@ -104,6 +109,7 @@ export function calculateLanded(cfg, ov = {}) {
     headroom: min === null ? null : net - min,
     belowMinimum: min === null ? null : net < min,
     financing: fin,
+    lcFeeUnknown,
     buyerLandedPerUnit: price + buyerDuty,
     termsKey,
   };
@@ -155,12 +161,21 @@ function cushion(cfg, shock, base) {
   return { reachable: true, alreadyBreached: false, k: hi, magnitude: shock.magnitude * hi, unit: shock.unit };
 }
 
+// A letter of credit lowers collection risk, but the seller still advances the same cash while goods are
+// paid for and shipped. True when the L/C ties up as much cash as the most cash-hungry term listed.
+export function letterOfCreditCashNote(rows) {
+  const lc = rows.find((r) => r.key === "D");
+  if (!lc || !Number.isFinite(lc.peakFunding)) return { applies: false };
+  const maxPeak = Math.max(...rows.map((r) => r.peakFunding));
+  return { applies: maxPeak > 0 && lc.peakFunding >= maxPeak - 1e-6, peak: lc.peakFunding };
+}
+
 // The same trade under each payment-terms scenario the source case lists.
 export function compareTerms(cfg) {
   if (!validConfig(cfg)) return { known: false };
   const rows = Object.entries(cfg.terms).map(([key, terms]) => {
     const result = calculateLanded(cfg, { terms: key });
-    return { key, label: terms.label, financingTotal: result.financing.total ?? result.financing.perUnit * cfg.quantity, net: result.net, peakFunding: result.financing.peakFundingPerUnit * cfg.quantity };
+    return { key, label: terms.label, lcFeeUnknown: result.lcFeeUnknown, financingTotal: result.financing.total ?? result.financing.perUnit * cfg.quantity, net: result.net, peakFunding: result.financing.peakFundingPerUnit * cfg.quantity };
   });
   const costs = rows.map((r) => r.financingTotal);
   return { known: true, rows, spread: Math.max(...costs) - Math.min(...costs) };
