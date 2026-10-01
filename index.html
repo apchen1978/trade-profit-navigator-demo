@@ -18,7 +18,7 @@
       </span>
     </nav>
     <main class="shell">
-      <header class="topbar"><div><span class="eyebrow">PAUL'S TRADECRAFT · PROTOTYPE</span><h1>Trade Profit Navigator</h1></div><span class="status">SYNTHETIC / LOCAL ONLY</span></header>
+      <header class="topbar"><div><span class="eyebrow">PAUL'S TRADECRAFT · PROTOTYPE</span><h1>Trade Profit Navigator</h1></div><span class="status">SYNTHETIC / LOCAL ONLY</span><button class="lang-switch" id="lang-switch" type="button"></button></header>
       <section class="intro"><div><span class="eyebrow">VALUE CAPTURE DECISION TOOL</span><h2>Where can this trade business capture more value?</h2><p>Compare the next commercial lever by economics, cash exposure, risk and evidence, before committing more resources.</p></div><div class="boundary"><strong>Not a margin score.</strong><span>Mathematical opportunity is separated from commercial feasibility. UNKNOWN stays UNKNOWN.</span></div></section>
       <nav class="flow" aria-label="Decision flow"><span>01 Trade case</span><i>→</i><span>02 Value chain</span><i>→</i><span>03 Profit levers</span><i>→</i><span>04 Landed economics</span><i>→</i><span>05 Owner decision</span></nav>
       <section class="workspace">
@@ -49,10 +49,16 @@
       <footer>Trade Profit Navigator v0.1 · synthetic educational case · no real customer data · no closing probability · human judgment remains the authority.</footer>
     </main>
     <script type="module">
-      import { calculateCase, calculateLevers, formatMoney, getCaseFromSearch, parseInput } from './navigator.js?v=0.4.0';
-      import { calculateLanded, compareTerms, letterOfCreditCashNote, sensitivity } from './landed.js?v=0.5.0';
+      import { calculateCase, calculateLevers, formatMoney, getCaseFromSearch, parseInput } from './navigator.js?v=0.5.0';
+      import { SHOCKS, calculateLanded, compareTerms, letterOfCreditCashNote, sensitivity } from './landed.js?v=0.5.0';
+      import { ZH, LEVER_ZH, SENTENCES, makeTr } from './i18n.js?v=0.1.0';
       const $ = (id) => document.getElementById(id);
       const activeCase = getCaseFromSearch(window.location.search);
+      // Chinese by default, like the other demos; ?lang=en opens English.
+      let lang = new URLSearchParams(window.location.search).get('lang') === 'en' ? 'en' : 'zh';
+      let tr = makeTr(lang);
+      let S = SENTENCES[lang];
+      const lv = (text) => (lang === 'zh' ? LEVER_ZH[text] ?? text : text);
 
       function setChainNode(id, { value, label, note, tone = 'known' }) {
         const node = $(id);
@@ -62,46 +68,48 @@
         node.querySelector('small').textContent = note;
       }
 
-      function setCaseContext(caseData) {
-        const unit = caseData.unit;
+      function setCaseContext(caseData, resetInputs = true) {
+        const unit = tr(caseData.unit);
         const currency = caseData.currency;
-        $('case-title').textContent = caseData.product;
-        $('case-label').textContent = caseData.label;
-        $('case-market').textContent = caseData.market;
-        $('quantity').value = caseData.quantity;
-        $('purchase').value = caseData.purchasePrice;
-        $('selling').value = caseData.sellingPrice;
-        $('moq').value = caseData.moq;
+        $('case-title').textContent = tr(caseData.product);
+        $('case-label').textContent = tr(caseData.label);
+        $('case-market').textContent = tr(caseData.market);
+        if (resetInputs) {
+          $('quantity').value = caseData.quantity;
+          $('purchase').value = caseData.purchasePrice;
+          $('selling').value = caseData.sellingPrice;
+          $('moq').value = caseData.moq;
+        }
         ['unit-label', 'moq-unit'].forEach((id) => $(id).textContent = unit);
         ['purchase-unit', 'selling-unit'].forEach((id) => $(id).textContent = `${currency} / ${unit}`);
-        $('payment-terms').textContent = caseData.paymentTerms;
-        $('payment-note').textContent = caseData.paymentNote ?? 'Context only · not included in v0.1 calculations';
-        $('unknown-list').textContent = caseData.unknowns.join('; ');
+        $('payment-terms').textContent = tr(caseData.paymentTerms);
+        $('payment-note').textContent = tr(caseData.paymentNote ?? 'Context only · not included in v0.1 calculations');
+        $('unknown-list').textContent = caseData.unknowns.map(tr).join(lang === 'zh' ? '；' : '; ');
         const extraCost = caseData.knownCosts?.tradeAndProject;
         $('extra-cost-row').hidden = !Number.isFinite(extraCost);
         if (Number.isFinite(extraCost)) {
-          $('extra-cost-label').textContent = caseData.extraCostLabel;
+          $('extra-cost-label').textContent = tr(caseData.extraCostLabel);
           $('extra-cost-value').textContent = `${currency} ${extraCost} / ${unit}`;
         }
         const connected = Boolean(caseData.connectionNote);
         $('connected-note').hidden = !connected;
-        $('connected-note').textContent = caseData.connectionNote ?? '';
-        $('purchase-label').textContent = connected ? 'Goods cost' : 'Purchase price';
-        $('selling-label').textContent = caseData.sellingLabel ?? (connected ? 'Planning price' : 'Channel price');
-        setChainNode('chain-goods', { value: caseData.purchasePrice, label: connected ? 'Goods cost' : 'Manufacturing', note: `${currency} / ${unit}` });
+        $('connected-note').textContent = caseData.connectionNote ? tr(caseData.connectionNote) : '';
+        $('purchase-label').textContent = tr(connected ? 'Goods cost' : 'Purchase price');
+        $('selling-label').textContent = tr(caseData.sellingLabel ?? (connected ? 'Planning price' : 'Channel price'));
+        setChainNode('chain-goods', { value: caseData.purchasePrice, label: tr(connected ? 'Goods cost' : 'Manufacturing'), note: `${currency} / ${unit}` });
         setChainNode('chain-middle', Number.isFinite(extraCost)
-          ? { value: extraCost, label: 'Trade + project', note: `${currency} / ${unit}` }
-          : { value: '?', label: 'Export / freight', note: 'UNKNOWN', tone: 'unknown' });
+          ? { value: extraCost, label: tr('Trade + project'), note: `${currency} / ${unit}` }
+          : { value: '?', label: tr('Export / freight'), note: tr('UNKNOWN'), tone: 'unknown' });
         setChainNode('chain-third', connected
-          ? { value: '?', label: 'Binding payment', note: 'UNRESOLVED', tone: 'unknown' }
-          : { value: '?', label: 'Import / warehouse', note: 'UNKNOWN', tone: 'unknown' });
-        setChainNode('chain-price', { value: caseData.sellingPrice, label: caseData.sellingLabel ?? (connected ? 'Planning price' : 'Channel price'), note: `${currency} / ${unit}` });
-        $('unit-contribution-label').textContent = caseData.valuePool ? 'VALUE POOL PER UNIT' : 'KNOWN UNIT CONTRIBUTION';
-        $('total-contribution-label').textContent = caseData.valuePool ? 'VALUE POOL, TOTAL' : 'KNOWN TOTAL CONTRIBUTION';
-        $('unit-contribution-note').textContent = caseData.valuePoolNote ?? (connected
+          ? { value: '?', label: tr('Binding payment'), note: tr('UNRESOLVED'), tone: 'unknown' }
+          : { value: '?', label: tr('Import / warehouse'), note: tr('UNKNOWN'), tone: 'unknown' });
+        setChainNode('chain-price', { value: caseData.sellingPrice, label: tr(caseData.sellingLabel ?? (connected ? 'Planning price' : 'Channel price')), note: `${currency} / ${unit}` });
+        $('unit-contribution-label').textContent = tr(caseData.valuePool ? 'VALUE POOL PER UNIT' : 'KNOWN UNIT CONTRIBUTION');
+        $('total-contribution-label').textContent = tr(caseData.valuePool ? 'VALUE POOL, TOTAL' : 'KNOWN TOTAL CONTRIBUTION');
+        $('unit-contribution-note').textContent = tr(caseData.valuePoolNote ?? (connected
           ? 'Planning price less known goods, trade, and project cost per metre. It does not resolve payment terms.'
-          : 'Known price less known manufacturing cost. Not landed profit.');
-        $('total-contribution-note').textContent = caseData.totalContributionNote ?? 'Trade costs and commercial feasibility remain outside this figure.';
+          : 'Known price less known manufacturing cost. Not landed profit.'));
+        $('total-contribution-note').textContent = tr(caseData.totalContributionNote ?? 'Trade costs and commercial feasibility remain outside this figure.');
       }
 
       const FIELDS = [
@@ -140,7 +148,7 @@
         const cfg = landedConfig(parsed);
         const base = calculateLanded(cfg);
         if (!base.known) {
-          $('landed-headline').textContent = 'UNKNOWN: enter a valid quantity, prices, cost of capital and duty rate. Blank or invalid inputs are never treated as zero.';
+          $('landed-headline').textContent = S.unknownHeadline;
           ['landed-stack', 'landed-sens', 'landed-terms', 'landed-duty'].forEach((id) => { $(id).innerHTML = ''; });
           $('landed-weakest').textContent = '';
           return;
@@ -148,54 +156,62 @@
         const sens = sensitivity(cfg);
         const terms = compareTerms(cfg);
         const min = base.minimum;
-        $('landed-headline').innerHTML = `After freight, funding cost and deal costs, this trade keeps <strong>${esc(money(base.net))}</strong> (${base.marginPct.toFixed(1)}% of price)`
-          + (min === null ? '.' : !base.belowMinimum ? `, <strong>${esc(money(base.headroom))} above</strong> your ${esc(money(min))} minimum.` : `, <strong>${esc(money(-base.headroom))} below</strong> your ${esc(money(min))} minimum.`)
-          + (base.lcFeeUnknown ? ' <strong>Letter-of-credit bank fees are not entered, so they are not included.</strong>' : '');
+        const stop = lang === 'zh' ? '。' : '.';
+        $('landed-headline').innerHTML = S.keeps(esc(money(base.net)), base.marginPct.toFixed(1))
+          + (min === null ? stop : !base.belowMinimum ? S.above(esc(money(base.headroom)), esc(money(min))) : S.below(esc(money(-base.headroom)), esc(money(min))))
+          + (base.lcFeeUnknown ? S.lcMissing : '');
 
         $('landed-stack').innerHTML = base.stack.map((row) => {
           const share = base.price > 0 ? Math.min(100, (row.perUnit / base.price) * 100) : 0;
-          const note = row.id === 'duty' && row.perUnit === 0 ? '<em>paid by the buyer under this term</em>' : '';
-          return `<div class="stack-row"><span>${esc(row.label)} <b class="src ${row.source === 'ASSUMPTION' ? 'assumed' : ''}">${row.source}</b>${note}</span><i style="--w:${share.toFixed(1)}%"></i><strong>${esc(money2(row.perUnit))}</strong></div>`;
+          const note = row.id === 'duty' && row.perUnit === 0 ? `<em>${esc(S.paidByBuyer)}</em>` : '';
+          return `<div class="stack-row"><span>${esc(tr(row.label))} <b class="src ${row.source === 'ASSUMPTION' ? 'assumed' : ''}">${esc(tr(row.source))}</b>${note}</span><i style="--w:${share.toFixed(1)}%"></i><strong>${esc(money2(row.perUnit))}</strong></div>`;
         }).join('')
-          + `<div class="stack-row net"><span>Net contribution per unit</span><i style="--w:${Math.max(0, Math.min(100, (base.netPerUnit / base.price) * 100)).toFixed(1)}%"></i><strong>${esc(money2(base.netPerUnit))}</strong></div>`
-          + `<p class="stack-total">${esc(money(base.net))} in total on ${esc(money(base.revenue))} of revenue.</p>`;
+          + `<div class="stack-row net"><span>${esc(tr('Net contribution per unit'))}</span><i style="--w:${Math.max(0, Math.min(100, (base.netPerUnit / base.price) * 100)).toFixed(1)}%"></i><strong>${esc(money2(base.netPerUnit))}</strong></div>`
+          + `<p class="stack-total">${esc(S.totalOn(money(base.net), money(base.revenue)))}</p>`;
 
         const ordered = [...sens.rows].sort((a, b) => (a.cushion.reachable ? a.cushion.k : Infinity) - (b.cushion.reachable ? b.cushion.k : Infinity));
         const worst = Math.max(...sens.rows.map((r) => Math.abs(r.deltaNet)), 1);
+        const magnitudeOf = (id) => { const shock = SHOCKS.find((x) => x.id === id); return `${shock.magnitude}${tr(shock.unit)}`; };
         $('landed-sens').innerHTML = ordered.map((row) => {
           const impact = row.deltaNet === 0 && row.buyerLandedShiftPct !== 0
-            ? `hits the buyer: landed cost ${row.buyerLandedShiftPct > 0 ? '+' : ''}${row.buyerLandedShiftPct.toFixed(1)}%`
+            ? S.hitsBuyer(row.buyerLandedShiftPct > 0 ? '+' : '', row.buyerLandedShiftPct.toFixed(1))
             : money(row.deltaNet);
-          const breaks = row.cushion.alreadyBreached ? 'already below your minimum' : row.cushion.reachable ? `minimum breached at ${row.cushion.magnitude.toFixed(decimals(row.cushion.unit))}${row.cushion.unit}` : 'cannot reach your minimum on its own';
-          return `<div class="sens-row ${row.breachesMinimum ? 'breach' : ''}"><span>${esc(row.label)} ${esc(row.magnitude)}</span><i style="--w:${((Math.abs(row.deltaNet) / worst) * 100).toFixed(1)}%"></i><strong>${esc(impact)}</strong><small>${esc(breaks)}</small></div>`;
+          const breaks = row.cushion.alreadyBreached ? S.alreadyBelow : row.cushion.reachable ? S.breachedAt(row.cushion.magnitude.toFixed(decimals(row.cushion.unit)), tr(row.cushion.unit)) : S.cannotReach;
+          return `<div class="sens-row ${row.breachesMinimum ? 'breach' : ''}"><span>${esc(tr(row.label))} ${esc(magnitudeOf(row.id))}</span><i style="--w:${((Math.abs(row.deltaNet) / worst) * 100).toFixed(1)}%"></i><strong>${esc(impact)}</strong><small>${esc(breaks)}</small></div>`;
         }).join('');
         const w = sens.weakest;
         $('landed-weakest').innerHTML = w
-          ? `<strong>Weakest link:</strong> ${esc(w.label.toLowerCase())} ${esc(w.cushion.magnitude.toFixed(decimals(w.cushion.unit)))}${esc(w.cushion.unit)} and net contribution reaches your minimum. A standard shock here is ${esc(w.magnitude)}, so this case absorbs ${w.cushion.k.toFixed(1)} of them.`
-          : (base.headroom !== null && base.headroom < 0 ? 'The case is already below your minimum before any shock.' : 'No single driver tested reaches your minimum on its own.');
+          ? S.weakest(esc(lang === 'zh' ? tr(w.label) : tr(w.label).toLowerCase()), esc(w.cushion.magnitude.toFixed(decimals(w.cushion.unit))), esc(tr(w.cushion.unit)), esc(magnitudeOf(w.id)), w.cushion.k.toFixed(1))
+          : (base.headroom !== null && base.headroom < 0 ? S.belowBefore : S.noSingle);
 
-        $('landed-terms').innerHTML = terms.rows.map((row) => `<div class="terms-row ${row.key === base.termsKey ? 'active' : ''}"><span>${esc(row.label)}</span><strong>${esc(money(row.net))}</strong><small>funding cost ${esc(money(row.financingTotal))} · most cash tied up ${esc(money(row.peakFunding))}${row.lcFeeUnknown ? ' · bank fees not entered, so not included' : ''}</small></div>`).join('')
-          + `<p class="landed-insight">Across these payment terms, net contribution moves by <strong>${esc(money(terms.spread))}</strong>`
-          + (base.headroom > 0 ? ` (${((terms.spread / base.headroom) * 100).toFixed(0)}% of the current headroom).` : '.') + '</p>'
-          + (letterOfCreditCashNote(terms.rows).applies ? `<p class="landed-insight">A letter of credit lowers the risk of not being paid, but it does not lower the cash you advance: it ties up as much as the slowest payment term (<strong>${esc(money(letterOfCreditCashNote(terms.rows).peak))}</strong>).</p>` : '')
-          + (terms.rows.some((row) => row.lcFeeUnknown) ? '<p class="landed-insight">Letter of credit: enter the bank fees above to count them. Confirm them with your bank; this tool does not assume a rate.</p>' : '');
+        const lcNote = letterOfCreditCashNote(terms.rows);
+        $('landed-terms').innerHTML = terms.rows.map((row) => `<div class="terms-row ${row.key === base.termsKey ? 'active' : ''}"><span>${esc(tr(row.label))}</span><strong>${esc(money(row.net))}</strong><small>${esc(S.termFunding(money(row.financingTotal), money(row.peakFunding)))}${row.lcFeeUnknown ? esc(S.feesNotIncluded) : ''}</small></div>`).join('')
+          + `<p class="landed-insight">${S.spread(esc(money(terms.spread)))}`
+          + (base.headroom > 0 ? S.ofHeadroom(((terms.spread / base.headroom) * 100).toFixed(0)) : stop) + '</p>'
+          + (lcNote.applies ? `<p class="landed-insight">${S.lcCash(esc(money(lcNote.peak)))}</p>` : '')
+          + (terms.rows.some((row) => row.lcFeeUnknown) ? `<p class="landed-insight">${esc(S.lcEnter)}</p>` : '');
 
         const toDdp = cfg.dutyBearer === 'BUYER';
         const flipped = calculateLanded({ ...cfg, dutyBearer: toDdp ? 'SELLER' : 'BUYER' });
-        $('landed-duty').innerHTML = `<p class="landed-insight">${toDdp ? `The buyer's landed cost is <strong>${esc(money2(base.buyerLandedPerUnit))}</strong> per unit once the assumed duty is added.` : 'The seller carries the duty under this term.'} ${toDdp ? 'Quoting DDP instead' : 'Quoting CIF instead'} would give <strong>${esc(money(flipped.net))}</strong>`
-          + (min === null ? '.' : flipped.belowMinimum ? `, <strong>${esc(money(min - flipped.net))} below</strong> your minimum.` : ', still above your minimum.') + '</p>';
+        $('landed-duty').innerHTML = `<p class="landed-insight">${toDdp ? S.dutyBuyer(esc(money2(base.buyerLandedPerUnit))) : esc(S.dutySeller)} ${toDdp ? S.quoteDdp : S.quoteCif}${S.wouldGive(esc(money(flipped.net)))}`
+          + (min === null ? stop : flipped.belowMinimum ? S.belowMinBy(esc(money(min - flipped.net)), esc(money(min))) : S.stillAbove) + '</p>';
       }
 
       function fillLandedFields() {
         const landed = activeCase.landed;
         const select = $('terms');
-        if (!landed || select.options.length) return;
-        Object.entries(landed.terms).forEach(([key, terms]) => select.append(new Option(terms.label, key)));
-        select.value = landed.activeTerms;
-        $('min-contribution').value = landed.minimumContribution;
-        $('duty-rate').value = landed.dutyRate * 100;
-        $('capital').value = landed.costOfCapital * 100;
-        $('duty-bearer').value = landed.dutyBearer;
+        if (!landed) return;
+        const chosen = select.value || landed.activeTerms;
+        select.replaceChildren();
+        Object.entries(landed.terms).forEach(([key, terms]) => select.append(new Option(tr(terms.label), key)));
+        select.value = chosen;
+        if (!fillLandedFields.done) {
+          fillLandedFields.done = true;
+          $('min-contribution').value = landed.minimumContribution;
+          $('duty-rate').value = landed.dutyRate * 100;
+          $('capital').value = landed.costOfCapital * 100;
+          $('duty-bearer').value = landed.dutyBearer;
+        }
       }
 
       function render() {
@@ -211,8 +227,8 @@
           document.querySelector('.case-panel').append(inputWarning);
         }
         inputWarning.hidden = invalid.length === 0;
-        inputWarning.innerHTML = '<strong>INPUT CHECK</strong><span></span>';
-        inputWarning.querySelector('span').textContent = `${invalid.map((f) => f.label).join(', ')}: enter a valid positive number. A blank or invalid field stays UNKNOWN; it is never treated as zero.`;
+        inputWarning.innerHTML = `<strong>${esc(lv('INPUT CHECK'))}</strong><span></span>`;
+        inputWarning.querySelector('span').textContent = S.inputCheck(invalid.map((f) => tr(f.label)).join(lang === 'zh' ? '、' : ', '));
         const input = { ...activeCase, quantity: parsed.quantity, purchasePrice: parsed.purchase, sellingPrice: parsed.selling, moq: parsed.moq, knownCosts: { ...activeCase.knownCosts, manufacturing: parsed.purchase } };
         const result = calculateCase(input);
         const casePanel = document.querySelector('.case-panel');
@@ -221,20 +237,65 @@
           moqWarning = document.createElement('div');
           moqWarning.id = 'moq-warning';
           moqWarning.className = 'moq-warning';
-          moqWarning.innerHTML = '<strong>MOQ CHECK</strong><span>This quantity is below the supplier MOQ. The contribution shown remains a mathematical scenario, not an executable order economics result.</span>';
           casePanel.append(moqWarning);
         }
+        moqWarning.innerHTML = `<strong>${esc(lv('MOQ CHECK'))}</strong><span>${esc(S.moqCheck)}</span>`;
         $('unit-contribution').textContent = formatMoney(result.knownUnitContribution, activeCase.currency);
         $('total-contribution').textContent = formatMoney(result.knownTotalContribution, activeCase.currency);
         moqWarning.hidden = !result.quantityBelowMOQ;
-        $('lever-list').innerHTML = calculateLevers(input).map((lever) => `<section class="lever"><div class="lever-head"><span class="lever-no">0${lever.sort}</span><strong>${lever.title}</strong></div><div class="lever-grid"><div><small>ECONOMIC EFFECT</small><span>${lever.direction}</span></div><div><small>CASH EFFECT</small><span>${lever.cash}</span></div><div><small>RISK</small><span>${lever.risk}</span></div><div><small>EVIDENCE</small><span class="evidence-${lever.evidenceState.toLowerCase()}">${lever.evidence}</span></div></div><details><summary>Next experiment · Owner boundary</summary><p><b>Test next:</b> ${lever.next}</p><p><b>Owner decides:</b> ${lever.owner}</p><p><b>Still UNKNOWN:</b> ${lever.unknown}</p></details></section>`).join('');
+        $('lever-list').innerHTML = calculateLevers(input, lang).map((lever) => `<section class="lever"><div class="lever-head"><span class="lever-no">0${lever.sort}</span><strong>${lever.title}</strong></div><div class="lever-grid"><div><small>${lv('ECONOMIC EFFECT')}</small><span>${lever.direction}</span></div><div><small>${lv('CASH EFFECT')}</small><span>${lever.cash}</span></div><div><small>${lv('RISK')}</small><span>${lever.risk}</span></div><div><small>${lv('EVIDENCE')}</small><span class="evidence-${lever.evidenceState.toLowerCase()}">${lever.evidence}</span></div></div><details><summary>${lv('Next experiment · Owner boundary')}</summary><p><b>${lv('Test next:')}</b> ${lever.next}</p><p><b>${lv('Owner decides:')}</b> ${lever.owner}</p><p><b>${lv('Still UNKNOWN:')}</b> ${lever.unknown}</p></details></section>`).join('');
         renderLanded(parsed);
       }
       ['quantity', 'purchase', 'selling', 'moq', 'min-contribution', 'capital', 'duty-rate', 'lc-fee'].forEach((id) => $(id).addEventListener('input', render));
       ['duty-bearer', 'terms'].forEach((id) => $(id).addEventListener('change', render));
-      fillLandedFields();
+      // Static text: remember each English original once, then show the right language.
+      const originals = new WeakMap();
+      function translateStatic() {
+        const walker = document.createTreeWalker(document.body, NodeFilter.SHOW_TEXT);
+        const nodes = [];
+        while (walker.nextNode()) nodes.push(walker.currentNode);
+        for (const node of nodes) {
+          const key = node.nodeValue.replace(/\s+/g, ' ').trim();
+          if (!key) continue;
+          if (!originals.has(node)) originals.set(node, { text: node.nodeValue, key });
+          const o = originals.get(node);
+          if (o.key in ZH) node.nodeValue = lang === 'zh' ? o.text.replace(o.key, ZH[o.key]) : o.text;
+        }
+        for (const el of document.querySelectorAll('[aria-label], [placeholder]')) {
+          for (const attr of ['aria-label', 'placeholder']) {
+            if (!el.hasAttribute(attr)) continue;
+            const store = el.__orig ??= {};
+            store[attr] ??= el.getAttribute(attr);
+            if (store[attr] in ZH) el.setAttribute(attr, lang === 'zh' ? ZH[store[attr]] : store[attr]);
+          }
+        }
+      }
+      function applyLanguage() {
+        tr = makeTr(lang);
+        S = SENTENCES[lang];
+        document.documentElement.lang = lang === 'zh' ? 'zh-Hant' : 'en';
+        document.title = S.docTitle;
+        const portfolio = lang === 'en' ? '?lang=en' : '';
+        const links = document.querySelectorAll('.portfolio-nav a');
+        links[0].href = `https://paulstradecraft.com/${portfolio}#three-questions`;
+        links[1].href = `https://apchen1978.github.io/commercial-decision-desk/${portfolio}#mode-sample`;
+        links[2].href = `https://paulstradecraft.com/${portfolio}#contact`;
+        $('lang-switch').textContent = S.langButton;
+        $('lang-switch').setAttribute('aria-label', lang === 'zh' ? '切換語言' : 'Switch language');
+        translateStatic();
+        fillLandedFields();
+        setCaseContext(activeCase, false);
+        render();
+      }
+      $('lang-switch').addEventListener('click', () => {
+        lang = lang === 'zh' ? 'en' : 'zh';
+        const url = new URL(window.location.href);
+        url.searchParams.set('lang', lang);
+        history.replaceState(null, '', url);
+        applyLanguage();
+      });
       setCaseContext(activeCase);
-      render();
+      applyLanguage();
     </script>
   </body>
 </html>

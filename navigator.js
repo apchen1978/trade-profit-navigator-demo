@@ -138,10 +138,11 @@ function moqTierScenario(input) {
   };
 }
 
-export function calculateLevers(input) {
+export function calculateLevers(input, lang = "en") {
   const base = calculateCase(input);
   const supplierSaving = finite(input.purchasePrice) ? input.purchasePrice * 0.05 : null;
   const tier = moqTierScenario(input);
+  if (lang === "zh") return calculateLeversZh(input, base, supplierSaving, tier);
   const unit = input.unit ?? "units";
   const units = (n) => `${n.toLocaleString("en-US")} ${unit}`;
   const evidence = input.evidence === "SYNTHETIC"
@@ -194,4 +195,57 @@ export function calculateLevers(input) {
 export function formatMoney(value, currency = "USD") {
   if (!finite(value)) return "UNKNOWN";
   return `${currency} ${Math.round(value).toLocaleString("en-US")}`;
+}
+
+// Traditional Chinese wording for the three levers. Same numbers, same structure; only the words differ.
+const ZH_UNITS = { pairs: "雙", metres: "公尺", units: "單位" };
+
+function calculateLeversZh(input, base, supplierSaving, tier) {
+  const unit = ZH_UNITS[input.unit ?? "units"] ?? "單位";
+  const units = (n) => `${n.toLocaleString("en-US")} ${unit}`;
+  const evidence = input.evidence === "SYNTHETIC"
+    ? "SYNTHETIC · CDD 規劃基準，不是具約束力的條件"
+    : "PUBLIC_CLAIM · 採購價未經驗證";
+  return [
+    {
+      id: "cost",
+      title: "試試把供應商成本降低 5%",
+      direction: supplierSaving === null || !positive(input.quantity) ? "上行空間 = UNKNOWN" : `+${formatMoney(supplierSaving * input.quantity, input.currency)} 已知貢獻（還沒扣貿易成本）`,
+      cash: "數量不變的話，不需要新增庫存",
+      risk: "供應商的品質、交期或認證可能改變",
+      evidence,
+      unknown: "供應商能不能在不改規格的情況下降低成本",
+      next: "要求一份同規格的成本拆解與品質確認",
+      owner: "核准一次可控的供應商議價，而不是一刀切的降價",
+      sort: 1,
+    },
+    {
+      id: "moq",
+      title: "試算更高 MOQ 的經濟效益",
+      direction: tier === null
+        ? "上行空間 = UNKNOWN"
+        : `只有在階梯價是真的前提下，你需要的 ${units(tier.need)} 能省 ${formatMoney(tier.savingOnNeededUnits, input.currency)}`,
+      cash: tier === null
+        ? "UNKNOWN"
+        : `為 ${units(tier.tierQty)} 承諾 ${formatMoney(tier.commit, input.currency)}（相較下單 ${units(tier.executableQty)}，${tier.incrementalCash >= 0 ? "+" : "-"}${formatMoney(Math.abs(tier.incrementalCash), input.currency)}）；其中 ${units(tier.inventoryUnits)} 會變成庫存${tier.topUpCash > 0 ? `。MOQ 補足：為了湊到最低訂購量，需要 ${formatMoney(tier.topUpCash, input.currency)}` : ""}`,
+      risk: "需求、庫存持有與過時的風險仍是 UNKNOWN",
+      evidence: "HYPOTHESIS · 數量階梯 +50%、單價低 8%，只是情境假設，不是報價",
+      unknown: tier === null ? "UNKNOWN · 需要先有數量與採購價" : `需求能不能消化多出來的 ${units(tier.inventoryUnits)}`,
+      next: "提高 MOQ 之前，先取得滾動預測或買方承諾",
+      owner: "決定這筆試單的現金曝險能不能接受",
+      sort: 2,
+    },
+    {
+      id: "odm",
+      title: "探索 OEM → ODM / 供應方案",
+      direction: "上行空間 = UNKNOWN · 沒有假設任何售價上漲",
+      cash: "設計、包裝、認證與協調成本都是 UNKNOWN",
+      risk: "在商業需求被證實之前，執行範圍就先擴大了",
+      evidence: "HYPOTHESIS · 產品、品管與交貨協調可能創造價值",
+      unknown: "UNKNOWN · 買方願不願意付錢、需要的能力範圍",
+      next: "問一位目標買方：哪一個協調問題，他願意付錢解決",
+      owner: "選擇要試一個窄的服務組合，還是維持只賣產品",
+      sort: 3,
+    },
+  ].map((lever) => ({ ...lever, evidenceState: lever.evidence.split(" · ")[0], baseContribution: base.knownTotalContribution }));
 }
