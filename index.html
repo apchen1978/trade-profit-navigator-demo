@@ -41,6 +41,7 @@
           <label>Import duty rate (%)<input id="duty-rate" type="number" min="0" value="5" inputmode="decimal" /></label>
           <label>Who pays import duty<select id="duty-bearer"><option value="BUYER">Buyer (CIF / DAP quote)</option><option value="SELLER">Seller (DDP quote)</option></select></label>
           <label>Payment terms<select id="terms"></select></label>
+          <label>Letter-of-credit bank fees (% of order value)<input id="lc-fee" type="number" min="0" inputmode="decimal" placeholder="Confirm with your bank" /></label>
         </div>
         <p class="landed-note">Goods cost, freight and logistics, deal cost, contingency and the owner minimum come from the CDD planning case. <strong>ASSUMPTION</strong> items (cost of capital, duty rate, payment schedule, currency exposure) are illustrative and editable; check the duty rate for the actual product and destination. Nothing here is a market rate, a quote or a forecast.</p>
       </section>
@@ -49,7 +50,7 @@
     </main>
     <script type="module">
       import { calculateCase, calculateLevers, formatMoney, getCaseFromSearch, parseInput } from './navigator.js?v=0.4.0';
-      import { calculateLanded, compareTerms, sensitivity } from './landed.js?v=0.4.0';
+      import { calculateLanded, compareTerms, letterOfCreditCashNote, sensitivity } from './landed.js?v=0.5.0';
       const $ = (id) => document.getElementById(id);
       const activeCase = getCaseFromSearch(window.location.search);
 
@@ -127,6 +128,7 @@
           dutyRate: pct('duty-rate'),
           dutyBearer: $('duty-bearer').value,
           activeTerms: $('terms').value,
+          lcFeePct: parseInput($('lc-fee').value, { allowZero: true }) === null ? null : parseInput($('lc-fee').value, { allowZero: true }) / 100,
           minimumContribution: parseInput($('min-contribution').value, { allowZero: true }),
         };
       }
@@ -147,7 +149,8 @@
         const terms = compareTerms(cfg);
         const min = base.minimum;
         $('landed-headline').innerHTML = `After freight, funding cost and deal costs, this trade keeps <strong>${esc(money(base.net))}</strong> (${base.marginPct.toFixed(1)}% of price)`
-          + (min === null ? '.' : !base.belowMinimum ? `, <strong>${esc(money(base.headroom))} above</strong> your ${esc(money(min))} minimum.` : `, <strong>${esc(money(-base.headroom))} below</strong> your ${esc(money(min))} minimum.`);
+          + (min === null ? '.' : !base.belowMinimum ? `, <strong>${esc(money(base.headroom))} above</strong> your ${esc(money(min))} minimum.` : `, <strong>${esc(money(-base.headroom))} below</strong> your ${esc(money(min))} minimum.`)
+          + (base.lcFeeUnknown ? ' <strong>Letter-of-credit bank fees are not entered, so they are not included.</strong>' : '');
 
         $('landed-stack').innerHTML = base.stack.map((row) => {
           const share = base.price > 0 ? Math.min(100, (row.perUnit / base.price) * 100) : 0;
@@ -171,9 +174,11 @@
           ? `<strong>Weakest link:</strong> ${esc(w.label.toLowerCase())} ${esc(w.cushion.magnitude.toFixed(decimals(w.cushion.unit)))}${esc(w.cushion.unit)} and net contribution reaches your minimum. A standard shock here is ${esc(w.magnitude)}, so this case absorbs ${w.cushion.k.toFixed(1)} of them.`
           : (base.headroom !== null && base.headroom < 0 ? 'The case is already below your minimum before any shock.' : 'No single driver tested reaches your minimum on its own.');
 
-        $('landed-terms').innerHTML = terms.rows.map((row) => `<div class="terms-row ${row.key === base.termsKey ? 'active' : ''}"><span>${esc(row.label)}</span><strong>${esc(money(row.net))}</strong><small>funding cost ${esc(money(row.financingTotal))}</small></div>`).join('')
-          + `<p class="landed-insight">The unresolved payment terms are worth <strong>${esc(money(terms.spread))}</strong> of net contribution`
-          + (base.headroom > 0 ? ` (${((terms.spread / base.headroom) * 100).toFixed(0)}% of the current headroom).` : '.') + '</p>';
+        $('landed-terms').innerHTML = terms.rows.map((row) => `<div class="terms-row ${row.key === base.termsKey ? 'active' : ''}"><span>${esc(row.label)}</span><strong>${esc(money(row.net))}</strong><small>funding cost ${esc(money(row.financingTotal))} · most cash tied up ${esc(money(row.peakFunding))}${row.lcFeeUnknown ? ' · bank fees not entered, so not included' : ''}</small></div>`).join('')
+          + `<p class="landed-insight">Across these payment terms, net contribution moves by <strong>${esc(money(terms.spread))}</strong>`
+          + (base.headroom > 0 ? ` (${((terms.spread / base.headroom) * 100).toFixed(0)}% of the current headroom).` : '.') + '</p>'
+          + (letterOfCreditCashNote(terms.rows).applies ? `<p class="landed-insight">A letter of credit lowers the risk of not being paid, but it does not lower the cash you advance: it ties up as much as the slowest payment term (<strong>${esc(money(letterOfCreditCashNote(terms.rows).peak))}</strong>).</p>` : '')
+          + (terms.rows.some((row) => row.lcFeeUnknown) ? '<p class="landed-insight">Letter of credit: enter the bank fees above to count them. Confirm them with your bank; this tool does not assume a rate.</p>' : '');
 
         const toDdp = cfg.dutyBearer === 'BUYER';
         const flipped = calculateLanded({ ...cfg, dutyBearer: toDdp ? 'SELLER' : 'BUYER' });
@@ -225,7 +230,7 @@
         $('lever-list').innerHTML = calculateLevers(input).map((lever) => `<section class="lever"><div class="lever-head"><span class="lever-no">0${lever.sort}</span><strong>${lever.title}</strong></div><div class="lever-grid"><div><small>ECONOMIC EFFECT</small><span>${lever.direction}</span></div><div><small>CASH EFFECT</small><span>${lever.cash}</span></div><div><small>RISK</small><span>${lever.risk}</span></div><div><small>EVIDENCE</small><span class="evidence-${lever.evidenceState.toLowerCase()}">${lever.evidence}</span></div></div><details><summary>Next experiment · Owner boundary</summary><p><b>Test next:</b> ${lever.next}</p><p><b>Owner decides:</b> ${lever.owner}</p><p><b>Still UNKNOWN:</b> ${lever.unknown}</p></details></section>`).join('');
         renderLanded(parsed);
       }
-      ['quantity', 'purchase', 'selling', 'moq', 'min-contribution', 'capital', 'duty-rate'].forEach((id) => $(id).addEventListener('input', render));
+      ['quantity', 'purchase', 'selling', 'moq', 'min-contribution', 'capital', 'duty-rate', 'lc-fee'].forEach((id) => $(id).addEventListener('input', render));
       ['duty-bearer', 'terms'].forEach((id) => $(id).addEventListener('change', render));
       fillLandedFields();
       setCaseContext(activeCase);
