@@ -27,7 +27,7 @@ export const CASE_GULF_001 = {
   market: "UAE → Abu Dhabi hospitality projects (synthetic)",
   quantity: 12000,
   unit: "metres",
-  purchasePrice: 22,
+  purchasePrice: 22, // SYNTHETIC ASSUMPTION: USD 22 per metre of finished window width, not a supplier quote
   sellingPrice: 40,
   currency: "USD",
   moq: 12000,
@@ -36,7 +36,7 @@ export const CASE_GULF_001 = {
   evidence: "SYNTHETIC",
   knownCosts: { manufacturing: 22, tradeAndProject: 8 },
   extraCostLabel: "Known trade + project cost",
-  connectionNote: "Shared planning basis with the CDD Gulf Coast Hospitality sample: 12,000 metres × USD 40, with USD 22 goods cost and USD 8 known trade/project cost per metre. The released volume and binding payment terms remain unresolved.",
+  connectionNote: "Shared planning basis with the CDD Gulf Coast Hospitality sample: 12,000 metres (one metre = one metre of finished window width, excluding on-site installation) × USD 40, with USD 22 goods cost and USD 8 known trade/project cost per metre. The USD 22 goods cost is a synthetic assumption, not a supplier quote. The released volume and binding payment terms remain unresolved.",
   economicsBoundary: "KNOWN CDD PLANNING COSTS · RELEASED VOLUME AND BINDING PAYMENT TERMS REMAIN UNKNOWN",
   totalContributionNote: "Matches the CDD planning expected net contribution before unresolved payment terms are accepted.",
   // Landed-economics basis. tradeCost, dealCost, contingency and the minimum come
