@@ -107,7 +107,7 @@
         $('unit-contribution-label').textContent = tr(caseData.valuePool ? 'VALUE POOL PER UNIT' : 'KNOWN UNIT CONTRIBUTION');
         $('total-contribution-label').textContent = tr(caseData.valuePool ? 'VALUE POOL, TOTAL' : 'KNOWN TOTAL CONTRIBUTION');
         $('unit-contribution-note').textContent = tr(caseData.valuePoolNote ?? (connected
-          ? 'Planning price less known goods, trade, and project cost per metre. It does not resolve payment terms.'
+          ? 'Planning price less known goods, trade, and project cost per metre of finished window width. It does not resolve payment terms.'
           : 'Known price less known manufacturing cost. Not landed profit.'));
         $('total-contribution-note').textContent = tr(caseData.totalContributionNote ?? 'Trade costs and commercial feasibility remain outside this figure.');
       }
