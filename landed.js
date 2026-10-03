@@ -7,15 +7,27 @@
 
 const finite = (v) => typeof v === "number" && Number.isFinite(v);
 
-export const SHOCKS = [
-  { id: "price", label: "Selling price falls by", unit: "%", magnitude: 5, apply: (k) => ({ priceMult: 1 - 0.05 * k }) },
-  { id: "goods", label: "Goods cost rises by", unit: "%", magnitude: 5, apply: (k) => ({ goodsMult: 1 + 0.05 * k }) },
-  { id: "shipping", label: "Freight and logistics rise by", unit: "%", magnitude: 30, apply: (k) => ({ tradeMult: 1 + 0.3 * k }) },
-  { id: "fx", label: "Cost currency strengthens against the quote currency by", unit: "%", magnitude: 3, apply: (k) => ({ fxMovePct: 3 * k }) },
-  { id: "delay", label: "Buyer pays later than agreed by", unit: " days", magnitude: 30, apply: (k) => ({ delayDays: 30 * k }) },
-  { id: "rate", label: "Cost of capital rises by", unit: " pts", magnitude: 3, apply: (k) => ({ rateAdd: 0.03 * k }) },
-  { id: "duty", label: "Import duty rate rises by", unit: " pts", magnitude: 10, apply: (k) => ({ dutyRateAdd: 0.1 * k }) },
-];
+import { DEFAULT_PACK, validatePack } from "./pack.js";
+
+// How one standard shock changes the model, keyed by the shock id the pack lists. The
+// SIZE of each shock (pack.shocks[].magnitude) is data and lives in the pack; only the
+// mechanics live here.
+const EFFECTS = {
+  price: (m, k) => ({ priceMult: 1 - (m / 100) * k }),
+  goods: (m, k) => ({ goodsMult: 1 + (m / 100) * k }),
+  shipping: (m, k) => ({ tradeMult: 1 + (m / 100) * k }),
+  fx: (m, k) => ({ fxMovePct: m * k }),
+  delay: (m, k) => ({ delayDays: m * k }),
+  rate: (m, k) => ({ rateAdd: (m / 100) * k }),
+  duty: (m, k) => ({ dutyRateAdd: (m / 100) * k }),
+};
+
+export function buildShocks(pack = DEFAULT_PACK) {
+  return pack.shocks.map((s) => ({ id: s.id, label: s.label, unit: s.unit, magnitude: s.magnitude, apply: (k) => EFFECTS[s.id](s.magnitude, k) }));
+}
+
+// Kept for callers that only need the default shocks.
+export const SHOCKS = buildShocks(DEFAULT_PACK);
 
 function validConfig(cfg) {
   if (!cfg || typeof cfg !== "object") return false;
@@ -117,10 +129,12 @@ export function calculateLanded(cfg, ov = {}) {
 
 // Net contribution change for each shock, ranked by damage, plus how far each
 // driver can move before the owner's minimum is breached (its cushion).
-export function sensitivity(cfg) {
+export function sensitivity(cfg, pack = DEFAULT_PACK) {
+  const check = validatePack(pack);
+  if (!check.ok) return { known: false, reason: "PACK_INVALID", problems: check.problems };
   const base = calculateLanded(cfg);
   if (!base.known) return { known: false };
-  const rows = SHOCKS.map((shock) => {
+  const rows = buildShocks(pack).map((shock) => {
     const shocked = calculateLanded(cfg, shock.apply(1));
     const buyerShift = ((shocked.buyerLandedPerUnit - base.buyerLandedPerUnit) / base.buyerLandedPerUnit) * 100;
     return {
