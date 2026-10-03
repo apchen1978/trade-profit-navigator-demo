@@ -1,9 +1,18 @@
 import { CASE_001, CASES } from "./cases.js";
 export { CASE_001, CASE_GULF_001, CASES } from "./cases.js";
 
+// Which case a page address asks for. An address with no case shows the default example. An address
+// that names a case that does not exist still shows the default example, but says so
+// (fellBack: true) so the page can tell the reader instead of silently showing something else.
+export function resolveCase(search = "") {
+  const requested = new URLSearchParams(search).get("case");
+  if (requested === null || requested === "") return { case: CASE_001, requested: null, fellBack: false };
+  const found = Object.hasOwn(CASES, requested) ? CASES[requested] : undefined;
+  return found ? { case: found, requested, fellBack: false } : { case: CASE_001, requested, fellBack: true };
+}
+
 export function getCaseFromSearch(search = "") {
-  const caseId = new URLSearchParams(search).get("case");
-  return CASES[caseId] ?? CASE_001;
+  return resolveCase(search).case;
 }
 
 const finite = (value) => typeof value === "number" && Number.isFinite(value);
