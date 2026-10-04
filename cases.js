@@ -2,6 +2,8 @@
 // method. To use the tool for another trade, add a case here (or in a separate file that
 // exports one) and leave navigator.js / landed.js / pack.js untouched. See docs/SWAP_GUIDE.md.
 
+import { GULF_BASELINE as baseline } from "./cases/gulf-hospitality-baseline.js";
+
 export const CASE_001 = {
   id: "TPN-001",
   label: "SYNTHETIC USD BASELINE / INSPIRED BY PUBLIC CLAIM / NOT VERIFIED",
@@ -27,35 +29,36 @@ export const CASE_001 = {
 // fixture. It is not a live integration, shared session, or order approval.
 export const CASE_GULF_001 = {
   id: "GULF-001",
+  caseBaseline: { id: baseline.id, version: baseline.version },
   label: "SYNTHETIC CONNECTED CASE / CDD PLANNING BASIS / NOT COMMITTABLE",
   product: "Blackout drapery, sheer curtains and decorative valances",
   market: "UAE → Abu Dhabi hospitality projects (synthetic)",
-  quantity: 12000,
+  quantity: baseline.quantity,
   unit: "metres",
   unitZh: "公尺",
   unitContributionNote: "Planning price less known goods, trade, and project cost per metre of finished window width. It does not resolve payment terms.",
-  purchasePrice: 22, // SYNTHETIC ASSUMPTION: USD 22 per metre of finished window width, not a supplier quote
-  sellingPrice: 40,
+  purchasePrice: baseline.costsPerUnitUsd.goods, // Owner-approved synthetic input, not a supplier quote
+  sellingPrice: baseline.pricePerUnitUsd,
   currency: "USD",
-  moq: 12000,
+  moq: baseline.quantity,
   paymentTerms: "UNRESOLVED: RFP says 90 days after delivery; referral note mentions 30% advance",
   paymentNote: "Context only · the payment contradiction is not used to rank a lever",
   evidence: "SYNTHETIC",
-  knownCosts: { manufacturing: 22, tradeAndProject: 8 },
+  knownCosts: { manufacturing: baseline.costsPerUnitUsd.goods, tradeAndProject: Math.round((baseline.costsPerUnitUsd.tradeLogistics + baseline.costsPerUnitUsd.dealSpecific + baseline.costsPerUnitUsd.contingency) * 100) / 100 },
   extraCostLabel: "Known trade + project cost",
-  connectionNote: "Shared planning basis with the CDD Gulf Coast Hospitality sample: 12,000 metres (one metre = one metre of finished window width, excluding on-site installation) × USD 40, with USD 22 goods cost and USD 8 known trade/project cost per metre. The USD 22 goods cost is a synthetic assumption, not a supplier quote. The released volume and binding payment terms remain unresolved.",
+  connectionNote: "Shared planning basis with the CDD Gulf Coast Hospitality sample: 12,000 metres (one metre = one metre of finished window width, excluding on-site installation) × USD 12 CIF, with USD 6.60 goods cost and USD 2.40 known trade/project/reserve cost per metre. The USD 6.60 goods cost is a synthetic assumption, not a supplier quote. The released volume and binding payment terms remain unresolved.",
   economicsBoundary: "KNOWN CDD PLANNING COSTS · RELEASED VOLUME AND BINDING PAYMENT TERMS REMAIN UNKNOWN",
   totalContributionNote: "Matches the CDD planning expected net contribution before unresolved payment terms are accepted.",
   // Landed-economics basis. tradeCost, dealCost, contingency and the minimum come
-  // from CDD's planning economics (USD 42,000 / 36,000 / 18,000 over 12,000 m; owner
-  // minimum USD 96,000). Everything marked ASSUMPTION is illustrative and editable.
+  // from the canonical Owner-approved synthetic case (USD 12,600 / 10,800 / 5,400;
+  // fixed minimum USD 28,800). Everything marked ASSUMPTION is illustrative and editable.
   landed: {
-    tradeCost: 3.5,
-    dealCost: 3.0,
-    contingency: 1.5,
-    minimumContribution: 96000,
+    tradeCost: baseline.costsPerUnitUsd.tradeLogistics,
+    dealCost: baseline.costsPerUnitUsd.dealSpecific,
+    contingency: baseline.costsPerUnitUsd.contingency,
+    minimumContribution: baseline.minimumNetContributionUsd,
     dutyRate: 0.05, // ASSUMPTION: illustrative rate; verify for the actual HS code and destination
-    dutyBearer: "BUYER", // CIF quote: import duty is the buyer's unless the seller quotes DDP
+    dutyBearer: "BUYER", // Baseline buyer-borne duty; switching the bearer alone is not a full DDP quote
     costOfCapital: 0.08, // ASSUMPTION: annual cost of funding working capital
     fxShare: 1, // ASSUMPTION: goods cost is paid in a currency other than the quote currency
     timeline: { depositShare: 0.3, depositDay: 0, balanceDay: 45, otherCostDay: 60, deliveryDay: 75 }, // ASSUMPTION: schedule

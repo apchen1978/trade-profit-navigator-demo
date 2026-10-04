@@ -36,10 +36,10 @@
           <div class="landed-col"><h4>Payment terms and import duty</h4><div id="landed-terms"></div><div id="landed-duty"></div></div>
         </div>
         <div class="landed-fields">
-          <label>Owner minimum net contribution (USD)<input id="min-contribution" type="number" min="0" value="96000" inputmode="decimal" /></label>
+          <label>Owner minimum net contribution (USD)<input id="min-contribution" type="number" min="0" value="28800" inputmode="decimal" /></label>
           <label>Cost of capital (% per year)<input id="capital" type="number" min="0" value="8" inputmode="decimal" /></label>
           <label>Import duty rate (%)<input id="duty-rate" type="number" min="0" value="5" inputmode="decimal" /></label>
-          <label>Who pays import duty<select id="duty-bearer"><option value="BUYER">Buyer (CIF / DAP quote)</option><option value="SELLER">Seller (DDP quote)</option></select></label>
+          <label>Who pays import duty<select id="duty-bearer"><option value="BUYER">Buyer (CIF / DAP quote)</option><option value="SELLER">Seller (import duty only; not a full DDP quote)</option></select></label>
           <label>Payment terms<select id="terms"></select></label>
           <label>Letter-of-credit bank fees (% of order value)<input id="lc-fee" type="number" min="0" inputmode="decimal" placeholder="Confirm with your bank" /></label>
         </div>
@@ -184,7 +184,7 @@
         }).join('');
         const w = sens.weakest;
         $('landed-weakest').innerHTML = w
-          ? S.weakest(esc(lang === 'zh' ? tr(w.label) : tr(w.label).toLowerCase()), esc(w.cushion.magnitude.toFixed(decimals(w.cushion.unit))), esc(tr(w.cushion.unit)), esc(magnitudeOf(w.id)), w.cushion.k.toFixed(1))
+          ? S.weakest(esc(lang === 'zh' ? tr(w.label) : tr(w.label).toLowerCase()), esc(w.cushion.magnitude.toFixed(decimals(w.cushion.unit))), esc(tr(w.cushion.unit)), esc(magnitudeOf(w.id)), w.cushion.k.toFixed(1), w.id)
           : (base.headroom !== null && base.headroom < 0 ? S.belowBefore : S.noSingle);
 
         const lcNote = letterOfCreditCashNote(terms.rows);
