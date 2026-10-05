@@ -91,7 +91,7 @@ export function calculateLevers(input, lang = "en", pack = DEFAULT_PACK) {
   const unit = input.unit ?? "units";
   const units = (n) => `${n.toLocaleString("en-US")} ${unit}`;
   const evidence = input.evidence === "SYNTHETIC"
-    ? "SYNTHETIC · CDD planning basis, not binding terms"
+    ? "DEMO · decision desk planning basis, not binding terms"
     : "PUBLIC_CLAIM · purchase price is not verified";
   return [
     {
@@ -149,7 +149,7 @@ function calculateLeversZh(input, base, supplierSaving, tier, levers) {
   const unit = input.unitZh ?? "單位";
   const units = (n) => `${n.toLocaleString("en-US")} ${unit}`;
   const evidence = input.evidence === "SYNTHETIC"
-    ? "SYNTHETIC · CDD 規劃基準，不是具約束力的條件"
+    ? "示範 · 商務決策工作台規劃基準，不是具約束力的條件"
     : "PUBLIC_CLAIM · 採購價未經驗證";
   return [
     {

@@ -101,7 +101,7 @@ export function calculateLanded(cfg, ov = {}) {
   // Letter-of-credit bank fees are the owner's input. Blank stays UNKNOWN and is never counted as zero cost.
   const lc = cfg.terms[termsKey].lc === true;
   const lcFeeUnknown = lc && !finite(cfg.lcFeePct);
-  if (lc && !lcFeeUnknown) stack.push({ id: "lcFee", label: "Letter-of-credit bank fees", perUnit: price * cfg.lcFeePct, source: "OWNER INPUT" });
+  if (lc && !lcFeeUnknown) stack.push({ id: "lcFee", label: "Letter-of-credit bank fees", perUnit: price * cfg.lcFeePct, source: "YOUR INPUT" });
   for (const row of stack) row.total = row.perUnit * q;
   const costPerUnit = stack.reduce((sum, row) => sum + row.perUnit, 0);
   const netPerUnit = price - costPerUnit;
