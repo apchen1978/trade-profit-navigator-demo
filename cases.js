@@ -6,7 +6,7 @@ import { GULF_BASELINE as baseline } from "./cases/gulf-hospitality-baseline.js"
 
 export const CASE_001 = {
   id: "TPN-001",
-  label: "SYNTHETIC USD BASELINE / INSPIRED BY PUBLIC CLAIM / NOT VERIFIED",
+  label: "DEMO USD BASELINE / INSPIRED BY PUBLIC CLAIM / NOT VERIFIED",
   product: "Running shoe",
   market: "Southeast Asia → international retail",
   quantity: 1000,
@@ -30,9 +30,9 @@ export const CASE_001 = {
 export const CASE_GULF_001 = {
   id: "GULF-001",
   caseBaseline: { id: baseline.id, version: baseline.version },
-  label: "SYNTHETIC CONNECTED CASE / CDD PLANNING BASIS / NOT COMMITTABLE",
+  label: "DEMO CONNECTED CASE / DECISION DESK PLANNING BASIS / NOT COMMITTABLE",
   product: "Blackout drapery, sheer curtains and decorative valances",
-  market: "UAE → Abu Dhabi hospitality projects (synthetic)",
+  market: "UAE → Abu Dhabi hospitality projects (demo)",
   quantity: baseline.quantity,
   unit: "metres",
   unitZh: "公尺",
@@ -46,9 +46,9 @@ export const CASE_GULF_001 = {
   evidence: "SYNTHETIC",
   knownCosts: { manufacturing: baseline.costsPerUnitUsd.goods, tradeAndProject: Math.round((baseline.costsPerUnitUsd.tradeLogistics + baseline.costsPerUnitUsd.dealSpecific + baseline.costsPerUnitUsd.contingency) * 100) / 100 },
   extraCostLabel: "Known trade + project cost",
-  connectionNote: "Shared planning basis with the CDD Gulf Coast Hospitality sample: 12,000 metres (one metre = one metre of finished window width, excluding on-site installation) × USD 12 CIF, with USD 6.60 goods cost and USD 2.40 known trade/project/reserve cost per metre. The USD 6.60 goods cost is a synthetic assumption, not a supplier quote. The released volume and binding payment terms remain unresolved.",
-  economicsBoundary: "KNOWN CDD PLANNING COSTS · RELEASED VOLUME AND BINDING PAYMENT TERMS REMAIN UNKNOWN",
-  totalContributionNote: "Matches the CDD planning expected net contribution before unresolved payment terms are accepted.",
+  connectionNote: "Shared planning basis with the Commercial Decision Desk Gulf Coast Hospitality sample: 12,000 metres (one metre = one metre of finished window width, excluding on-site installation) × USD 12 CIF, with USD 6.60 goods cost and USD 2.40 known trade/project/reserve cost per metre. The USD 6.60 goods cost is a demo assumption, not a supplier quote. The released volume and binding payment terms remain unresolved.",
+  economicsBoundary: "KNOWN DECISION DESK PLANNING COSTS · RELEASED VOLUME AND BINDING PAYMENT TERMS REMAIN UNKNOWN",
+  totalContributionNote: "Matches the decision desk planning expected net contribution before unresolved payment terms are accepted.",
   // Landed-economics basis. tradeCost, dealCost, contingency and the minimum come
   // from the canonical Owner-approved synthetic case (USD 12,600 / 10,800 / 5,400;
   // fixed minimum USD 28,800). Everything marked ASSUMPTION is illustrative and editable.
