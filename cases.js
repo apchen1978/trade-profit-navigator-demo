@@ -1,4 +1,4 @@
-// cases.js — scenario data only. Every case here is SYNTHETIC; nothing in this file is a
+// cases.js — scenario data only. Every case here is demo data; nothing in this file is a
 // method. To use the tool for another trade, add a case here (or in a separate file that
 // exports one) and leave navigator.js / landed.js / pack.js untouched. See docs/SWAP_GUIDE.md.
 
@@ -37,7 +37,7 @@ export const CASE_GULF_001 = {
   unit: "metres",
   unitZh: "公尺",
   unitContributionNote: "Planning price less known goods, trade, and project cost per metre of finished width. It does not resolve payment terms.",
-  purchasePrice: baseline.costsPerUnitUsd.goods, // Owner-approved synthetic input, not a supplier quote
+  purchasePrice: baseline.costsPerUnitUsd.goods, // Demo input, not a supplier quote
   sellingPrice: baseline.pricePerUnitUsd,
   currency: "USD",
   moq: baseline.quantity,
@@ -50,7 +50,7 @@ export const CASE_GULF_001 = {
   economicsBoundary: "KNOWN DECISION DESK PLANNING COSTS · RELEASED VOLUME AND BINDING PAYMENT TERMS REMAIN UNKNOWN",
   totalContributionNote: "Matches the decision desk planning expected net contribution before unresolved payment terms are accepted.",
   // Landed-economics basis. tradeCost, dealCost, contingency and the minimum come
-  // from the canonical Owner-approved synthetic case (USD 12,600 / 10,800 / 5,400;
+  // from the canonical demo case (USD 12,600 / 10,800 / 5,400;
   // fixed minimum USD 28,800). Everything marked ASSUMPTION is illustrative and editable.
   landed: {
     tradeCost: baseline.costsPerUnitUsd.tradeLogistics,
@@ -65,7 +65,7 @@ export const CASE_GULF_001 = {
     terms: {
       A: { label: "RFP: payment 90 days after delivery", receipts: [{ share: 1, base: "delivery", offset: 90, late: true }] },
       B: { label: "Referral note: 30% advance; timing of the 70% is UNKNOWN (assumed before shipment)", receipts: [{ share: 0.3, day: 0 }, { share: 0.7, day: 60, late: true }] },
-      // First-order options a seller could propose. Schedules are ASSUMPTIONS the owner can compare, not terms any buyer has agreed.
+      // First-order options a seller could propose. Schedules are ASSUMPTIONS the decision-maker can compare, not terms any buyer has agreed.
       C: { label: "Staged: 30% at order, 40% before shipment, 30% 30 days after delivery", receipts: [{ share: 0.3, day: 0 }, { share: 0.4, day: 60 }, { share: 0.3, base: "delivery", offset: 30, late: true }] },
       D: { label: "Letter of credit at sight: paid when shipping documents are accepted", lc: true, receipts: [{ share: 1, day: 62, late: true }] },
       E: { label: "Full prepayment before production", receipts: [{ share: 1, day: 0 }] },

@@ -1,6 +1,6 @@
 // landed.js — landed economics, financing cost and sensitivity for one priced trade.
 // Pure, deterministic, no I/O. Every figure that is not disclosed by the source
-// case is an ASSUMPTION the owner can edit; nothing here is a market rate.
+// case is an ASSUMPTION the decision-maker can edit; nothing here is a market rate.
 //
 // Question answered: "After freight, duty, payment timing and currency, how much
 // is left, and which single assumption is the weakest link?"
@@ -98,7 +98,7 @@ export function calculateLanded(cfg, ov = {}) {
     { id: "duty", label: "Import duty borne by seller", perUnit: duty, source: "ASSUMPTION" },
     { id: "financing", label: "Cost of funding the payment timeline", perUnit: fin.perUnit, source: "ASSUMPTION" },
   ];
-  // Letter-of-credit bank fees are the owner's input. Blank stays UNKNOWN and is never counted as zero cost.
+  // Letter-of-credit bank fees are the decision-maker's input. Blank stays UNKNOWN and is never counted as zero cost.
   const lc = cfg.terms[termsKey].lc === true;
   const lcFeeUnknown = lc && !finite(cfg.lcFeePct);
   if (lc && !lcFeeUnknown) stack.push({ id: "lcFee", label: "Letter-of-credit bank fees", perUnit: price * cfg.lcFeePct, source: "YOUR INPUT" });
@@ -128,7 +128,7 @@ export function calculateLanded(cfg, ov = {}) {
 }
 
 // Net contribution change for each shock, ranked by damage, plus how far each
-// driver can move before the owner's minimum is breached (its cushion).
+// driver can move before the decision-maker's minimum is breached (its cushion).
 export function sensitivity(cfg, pack = DEFAULT_PACK) {
   const check = validatePack(pack);
   if (!check.ok) return { known: false, reason: "PACK_INVALID", problems: check.problems };
@@ -158,7 +158,7 @@ export function sensitivity(cfg, pack = DEFAULT_PACK) {
 }
 
 // Smallest multiple k of the shock that brings net contribution down to the
-// owner's minimum, found by bisection (net is monotone in k for every driver).
+// decision-maker's minimum, found by bisection (net is monotone in k for every driver).
 function cushion(cfg, shock, base) {
   if (base.minimum === null) return { reachable: false, alreadyBreached: false };
   if (base.headroom < 0) return { reachable: false, alreadyBreached: true };
