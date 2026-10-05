@@ -1,6 +1,6 @@
 // pack.js — the assumptions a scenario brings with it, kept out of the method.
 //
-// A pack holds numbers the owner CHOSE (how large a "standard shock" is, which
+// A pack holds numbers the decision-maker CHOSE (how large a "standard shock" is, which
 // scenario levers to test). It never holds rules: how the model works lives in
 // landed.js and navigator.js and does not change when a pack is swapped. Every
 // figure here is illustrative and editable; none is a market rate or a quote.
@@ -19,7 +19,7 @@ export const DEFAULT_PACK = {
   version: "0.1.0",
   status: "ILLUSTRATIVE",
   effectiveDate: "2026-10-03",
-  source: "Owner-chosen standard shocks, carried over unchanged from landed.js v0.4. Illustrative, not market data.",
+  source: "Standard shocks chosen by the decision-maker, carried over unchanged from landed.js v0.4. Illustrative, not market data.",
   shocks: [
     { id: "price", label: "Selling price falls by", unit: "%", magnitude: 5 },
     { id: "goods", label: "Goods cost rises by", unit: "%", magnitude: 5 },
