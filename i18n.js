@@ -101,14 +101,14 @@ export const ZH = {
 
   // case data: Gulf
   "DEMO CONNECTED CASE / DECISION DESK PLANNING BASIS / NOT COMMITTABLE": "示範的連結案例 / 取自商務決策工作台規劃基準 / 還不能承諾",
-  "Blackout drapery, sheer curtains and decorative valances": "遮光窗簾、薄紗窗簾與裝飾簾頭",
+  "Hospitality interior products (demo)": "飯店室內產品（示範）",
   "UAE → Abu Dhabi hospitality projects (demo)": "阿聯 → 阿布達比飯店專案（示範）",
   "metres": "公尺",
   "UNRESOLVED: RFP says 90 days after delivery; referral note mentions 30% advance": "未解決：RFP 寫交貨後 90 天；轉介紀錄提到 30% 預付",
   "Context only · the payment contradiction is not used to rank a lever": "僅供參考 · 付款矛盾不用來替槓桿排序",
   "Known trade + project cost": "已知的貿易與專案成本",
-  "Shared planning basis with the Commercial Decision Desk Gulf Coast Hospitality sample: 12,000 metres (one metre = one metre of finished window width, excluding on-site installation) × USD 12 CIF, with USD 6.60 goods cost and USD 2.40 known trade/project/reserve cost per metre. The USD 6.60 goods cost is a demo assumption, not a supplier quote. The released volume and binding payment terms remain unresolved.": "與商務決策工作台「海灣飯店」範例共用同一個規劃基準：12,000 公尺（一公尺＝一公尺成品窗寬，不含現場安裝）× USD 12 CIF，每公尺貨物成本 USD 6.60、已知貿易／專案與風險準備成本 USD 2.40。每公尺 USD 6.60 的貨物成本為示範假設，不代表任何供應商報價。實際放行的數量與具約束力的付款條件仍未解決。",
-  "Planning price less known goods, trade, and project cost per metre of finished window width. It does not resolve payment terms.": "規劃價減去每公尺成品窗寬已知的貨物、貿易與專案成本。它不會解決付款條件。",
+  "Shared planning basis with the Commercial Decision Desk Gulf Coast Hospitality sample: 12,000 metres (one metre = one metre of finished width, excluding on-site installation) × USD 12 CIF, with USD 6.60 goods cost and USD 2.40 known trade/project/reserve cost per metre. The USD 6.60 goods cost is a demo assumption, not a supplier quote. The released volume and binding payment terms remain unresolved.": "與商務決策工作台「海灣飯店」範例共用同一個規劃基準：12,000 公尺（一公尺＝一公尺成品寬度，不含現場安裝）× USD 12 CIF，每公尺貨物成本 USD 6.60、已知貿易／專案與風險準備成本 USD 2.40。每公尺 USD 6.60 的貨物成本為示範假設，不代表任何供應商報價。實際放行的數量與具約束力的付款條件仍未解決。",
+  "Planning price less known goods, trade, and project cost per metre of finished width. It does not resolve payment terms.": "規劃價減去每公尺成品寬度已知的貨物、貿易與專案成本。它不會解決付款條件。",
   "Matches the decision desk planning expected net contribution before unresolved payment terms are accepted.": "與商務決策工作台規劃的預期淨貢獻一致，這是在未解決的付款條件被接受之前的數字。",
   "Released purchase-order quantity and phased schedule": "實際放行的採購單數量與分批時程",
   "Binding 30% / 70% payment triggers": "具約束力的 30% / 70% 付款觸發點",
