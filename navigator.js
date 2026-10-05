@@ -81,6 +81,12 @@ function moqTierScenario(input, levers) {
   };
 }
 
+// Display text may change ("DEMO" / "示範"); the state token drives the CSS class, so keep it stable.
+const evidenceStateOf = (evidence) => {
+  const head = evidence.split(" · ")[0];
+  return head === "DEMO" || head === "示範" ? "SYNTHETIC" : head;
+};
+
 export function calculateLevers(input, lang = "en", pack = DEFAULT_PACK) {
   assertPack(pack);
   const levers = pack.levers;
@@ -134,7 +140,7 @@ export function calculateLevers(input, lang = "en", pack = DEFAULT_PACK) {
       owner: "Choose whether to test a narrow service bundle or stay product-only",
       sort: 3,
     },
-  ].map((lever) => ({ ...lever, evidenceState: lever.evidence.split(" · ")[0], baseContribution: base.knownTotalContribution }));
+  ].map((lever) => ({ ...lever, evidenceState: evidenceStateOf(lever.evidence), baseContribution: base.knownTotalContribution }));
 }
 
 export function formatMoney(value, currency = "USD") {
@@ -192,5 +198,5 @@ function calculateLeversZh(input, base, supplierSaving, tier, levers) {
       owner: "選擇要試一個窄的服務組合，還是維持只賣產品",
       sort: 3,
     },
-  ].map((lever) => ({ ...lever, evidenceState: lever.evidence.split(" · ")[0], baseContribution: base.knownTotalContribution }));
+  ].map((lever) => ({ ...lever, evidenceState: evidenceStateOf(lever.evidence), baseContribution: base.knownTotalContribution }));
 }
