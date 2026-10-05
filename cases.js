@@ -31,12 +31,12 @@ export const CASE_GULF_001 = {
   id: "GULF-001",
   caseBaseline: { id: baseline.id, version: baseline.version },
   label: "DEMO CONNECTED CASE / DECISION DESK PLANNING BASIS / NOT COMMITTABLE",
-  product: "Blackout drapery, sheer curtains and decorative valances",
+  product: "Hospitality interior products (demo)",
   market: "UAE → Abu Dhabi hospitality projects (demo)",
   quantity: baseline.quantity,
   unit: "metres",
   unitZh: "公尺",
-  unitContributionNote: "Planning price less known goods, trade, and project cost per metre of finished window width. It does not resolve payment terms.",
+  unitContributionNote: "Planning price less known goods, trade, and project cost per metre of finished width. It does not resolve payment terms.",
   purchasePrice: baseline.costsPerUnitUsd.goods, // Owner-approved synthetic input, not a supplier quote
   sellingPrice: baseline.pricePerUnitUsd,
   currency: "USD",
@@ -46,7 +46,7 @@ export const CASE_GULF_001 = {
   evidence: "SYNTHETIC",
   knownCosts: { manufacturing: baseline.costsPerUnitUsd.goods, tradeAndProject: Math.round((baseline.costsPerUnitUsd.tradeLogistics + baseline.costsPerUnitUsd.dealSpecific + baseline.costsPerUnitUsd.contingency) * 100) / 100 },
   extraCostLabel: "Known trade + project cost",
-  connectionNote: "Shared planning basis with the Commercial Decision Desk Gulf Coast Hospitality sample: 12,000 metres (one metre = one metre of finished window width, excluding on-site installation) × USD 12 CIF, with USD 6.60 goods cost and USD 2.40 known trade/project/reserve cost per metre. The USD 6.60 goods cost is a demo assumption, not a supplier quote. The released volume and binding payment terms remain unresolved.",
+  connectionNote: "Shared planning basis with the Commercial Decision Desk Gulf Coast Hospitality sample: 12,000 metres (one metre = one metre of finished width, excluding on-site installation) × USD 12 CIF, with USD 6.60 goods cost and USD 2.40 known trade/project/reserve cost per metre. The USD 6.60 goods cost is a demo assumption, not a supplier quote. The released volume and binding payment terms remain unresolved.",
   economicsBoundary: "KNOWN DECISION DESK PLANNING COSTS · RELEASED VOLUME AND BINDING PAYMENT TERMS REMAIN UNKNOWN",
   totalContributionNote: "Matches the decision desk planning expected net contribution before unresolved payment terms are accepted.",
   // Landed-economics basis. tradeCost, dealCost, contingency and the minimum come
