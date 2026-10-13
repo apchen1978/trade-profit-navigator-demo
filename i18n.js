@@ -9,6 +9,7 @@
 export const ZH = {
   // page chrome
   "Portfolio navigation": "作品集導覽",
+  "Live result": "即時結果",
   "← Back to portfolio": "← 回作品集",
   "Before committing · Does the margin really hold?": "承諾前 · 毛利真的撐得住嗎？",
   "Previous: can you take this order now?": "上一個：這筆訂單，現在能不能接？",
