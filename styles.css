@@ -35,3 +35,15 @@
 @media (min-width: 641px) { html { scroll-padding-top: 64px; } .portfolio-nav { position: sticky; top: 0; z-index: 100; } }
 .lang-switch { font: inherit; font-size: 12px; font-weight: 700; color: #1f4d3a; background: #fff; border: 1px solid #d9ded4; border-radius: 999px; padding: 4px 12px; cursor: pointer; width: auto; }
 .lang-switch:hover { background: #f4f5f0; }
+/* Light-tech step 1: live result strip and a gentle update pulse */
+.live-strip{position:fixed;left:50%;bottom:14px;transform:translateX(-50%);z-index:90;display:flex;align-items:center;gap:6px 14px;flex-wrap:wrap;justify-content:center;max-width:min(760px,calc(100% - 24px));padding:10px 20px;background:rgba(255,254,250,.88);-webkit-backdrop-filter:blur(10px);backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:999px;box-shadow:0 10px 30px rgba(22,53,43,.14);font-size:14px}
+.live-strip[hidden]{display:none}
+.live-strip .live-main{font-weight:700;color:var(--forest);letter-spacing:-.01em}
+.live-strip .live-main small{display:inline;font-size:11px;letter-spacing:.06em;color:var(--amber);font-weight:700;margin-right:8px}
+.live-strip .live-flag{font-size:12px;color:var(--muted);font-weight:700}
+.live-strip .live-flag.low{color:var(--warning-ink,#9a4e2e)}
+@keyframes live-pulse{0%{background-color:rgba(162,118,53,.22)}100%{background-color:transparent}}
+.pulse{animation:live-pulse .7s ease-out}
+.shell{padding-bottom:96px}
+@media(max-width:640px){.live-strip{left:10px;right:10px;bottom:10px;transform:none;max-width:none;display:block;border-radius:18px;padding:10px 16px}.live-strip .live-main{display:block;font-size:15px;line-height:1.3}.live-strip .live-main small{display:block;margin:0 0 2px}.live-strip .live-flag{display:block;margin-top:2px}.shell{padding-bottom:110px}}
+@media(prefers-reduced-motion:reduce){.pulse{animation:none}}
